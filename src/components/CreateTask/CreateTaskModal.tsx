@@ -1,4 +1,13 @@
 import { X } from "phosphor-react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import cx from "classnames";
+
+interface CreateTaskModalProps {
+  isVisible: boolean;
+  closeModal: () => void;
+}
 
 const tags = [
   {
@@ -23,14 +32,75 @@ const tags = [
   },
 ];
 
-export const CreateTaskModal = () => {
+type Inputs = {
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  duration: string;
+  tags: {
+    name: string;
+    color: string;
+  };
+};
+
+const CreateTaskSchema = yup.object().shape({
+  title: yup
+    .string()
+    .required("Título é obrigatório")
+    .min(5, "No mínimo 5 caracteres"),
+  description: yup
+    .string()
+    .required("Descrição é obrigatório")
+    .min(10, "No mínimo 10 caracteres"),
+  date: yup.string().required("Data é obrigatório"),
+  time: yup.string(),
+  duration: yup.string(),
+  tags: yup.mixed(),
+});
+
+export const CreateTaskModal = ({
+  isVisible,
+  closeModal,
+}: CreateTaskModalProps) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>({
+    resolver: yupResolver(CreateTaskSchema),
+  });
+
+  const { onChange } = register("tags");
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log(data);
+  };
+
   return (
-    <div className="absolute inset-0 bg-overlay w-full h-full flex items-center justify-center">
-      <form className="shadow-md w-full max-w-[500px] bg-neutral-50 z-10 rounded-lg py-6 px-4">
+    <div
+      className={cx(
+        "inset-0 bg-overlay w-full h-full flex items-center justify-center",
+        {
+          absolute: isVisible,
+          hidden: !isVisible,
+        }
+      )}
+      onClick={closeModal}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={handleSubmit(onSubmit)}
+        className="shadow-md w-full max-w-[500px] bg-neutral-50 z-10 rounded-lg py-6 px-4"
+      >
         <header className="flex justify-between items-center">
           <strong className="text-2xl">Criar Tarefa</strong>
 
-          <X size={22} className="hover:scale-110 cursor-pointer" />
+          <X
+            onClick={closeModal}
+            size={22}
+            className="hover:scale-110 cursor-pointer"
+          />
         </header>
 
         <main className="mt-6 flex flex-col gap-6">
@@ -38,7 +108,13 @@ export const CreateTaskModal = () => {
             <label htmlFor="title" className="text-lg">
               Título
             </label>
+            {errors.title && (
+              <span className="block text-sm text-red-500">
+                {errors.title?.message}
+              </span>
+            )}
             <input
+              {...register("title")}
               type="text"
               id="title"
               placeholder="Insira o título da sua tarefa"
@@ -50,7 +126,11 @@ export const CreateTaskModal = () => {
             <label htmlFor="title" className="text-lg">
               Descrição
             </label>
+            <span className="block text-sm text-red-500">
+              {errors.description?.message}
+            </span>
             <textarea
+              {...register("description")}
               placeholder="Insira a descrição da sua tarefa"
               className="block w-full rounded-lg p-2 bg-neutral-200 h-[100px]"
             />
@@ -61,7 +141,11 @@ export const CreateTaskModal = () => {
               <label htmlFor="title" className="text-lg">
                 Data
               </label>
+              <span className="block text-sm text-red-500">
+                {errors.date?.message}
+              </span>
               <input
+                {...register("date")}
                 type="date"
                 className="bg-neutral-200 p-1 rounded-lg block"
               />
@@ -72,6 +156,7 @@ export const CreateTaskModal = () => {
                 Horário
               </label>
               <input
+                {...register("time")}
                 type="time"
                 className="block bg-neutral-200 rounded-lg p-1"
               />
@@ -82,6 +167,7 @@ export const CreateTaskModal = () => {
                 Duração
               </label>
               <input
+                {...register("duration")}
                 type="time"
                 className="block bg-neutral-200 rounded-lg p-1"
               />
@@ -91,17 +177,28 @@ export const CreateTaskModal = () => {
           <div>
             <span className="text-lg">Tags</span>
             <div className="bg-neutral-200 p-4 flex flex-wrap gap-8 rounded-lg">
-              {tags.map(({ color, name }, id) => (
+              {/* {tags.map(({ color, name }) => (
                 <>
-                  <input type="checkbox" id={color} />
+                  <input
+                    type="checkbox"
+                    id={`${name},${color}`}
+                    {...register("tags")}
+                    onChange={(e) => {
+                      e.target.value = e.target.id;
+                      onChange(e);
+                    }}
+                  />
                   <label
-                    htmlFor={color}
+                    htmlFor={`${name},${color}`}
                     className={`${color} -ml-6 px-2 py-1 rounded-md uppercase text-sm font-bold opacity-90 hover:opacity-100 transition-opacity`}
                   >
                     {name}
                   </label>
                 </>
-              ))}
+              ))} */}
+              <p className="block mx-auto text-lg opacity-60 font-semibold">
+                Nao há nenhuma task criada =(
+              </p>
             </div>
           </div>
         </main>
