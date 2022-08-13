@@ -5,7 +5,17 @@ module.exports = {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        overlay: 'rgba(0,0,0,0.3)'
+      },
+      fontFamily: {
+        'cairo': ['Cairo', 'sans-serif']
+      },
+      screens: {
+        'custom': '900px'
+      }
+    },
   },
   plugins: [],
 }
