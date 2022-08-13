@@ -4,8 +4,6 @@ import { CreateTaskModal } from "./CreateTaskModal";
 export const CreateTaskButton = () => {
   const [isCreateTaskModalOpen, setCreateTaskModalStatus] = useState(false);
 
-  const handleCloseCreateTaskModal = () => setCreateTaskModalStatus(false);
-
   return (
     <>
       <button
@@ -17,7 +15,7 @@ export const CreateTaskButton = () => {
 
       <CreateTaskModal
         isVisible={isCreateTaskModalOpen}
-        closeModal={handleCloseCreateTaskModal}
+        setCreateTaskModalStatus={setCreateTaskModalStatus}
       />
     </>
   );

@@ -3,10 +3,11 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import cx from "classnames";
+import { Dispatch, SetStateAction } from "react";
 
 interface CreateTaskModalProps {
   isVisible: boolean;
-  closeModal: () => void;
+  setCreateTaskModalStatus: Dispatch<SetStateAction<boolean>>;
 }
 
 const tags = [
@@ -61,11 +62,12 @@ const CreateTaskSchema = yup.object().shape({
 
 export const CreateTaskModal = ({
   isVisible,
-  closeModal,
+  setCreateTaskModalStatus,
 }: CreateTaskModalProps) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<Inputs>({
     resolver: yupResolver(CreateTaskSchema),
@@ -77,6 +79,11 @@ export const CreateTaskModal = ({
     console.log(data);
   };
 
+  const handleCloseModal = () => {
+    reset();
+    setCreateTaskModalStatus(false);
+  };
+
   return (
     <div
       className={cx(
@@ -86,7 +93,7 @@ export const CreateTaskModal = ({
           hidden: !isVisible,
         }
       )}
-      onClick={closeModal}
+      onClick={handleCloseModal}
     >
       <form
         onClick={(e) => e.stopPropagation()}
@@ -97,7 +104,7 @@ export const CreateTaskModal = ({
           <strong className="text-2xl">Criar Tarefa</strong>
 
           <X
-            onClick={closeModal}
+            onClick={handleCloseModal}
             size={22}
             className="hover:scale-110 cursor-pointer"
           />
@@ -105,7 +112,7 @@ export const CreateTaskModal = ({
 
         <main className="mt-6 flex flex-col gap-6">
           <div>
-            <label htmlFor="title" className="text-lg">
+            <label htmlFor="title" className="text-lg font-semibold">
               Título
             </label>
             {errors.title && (
@@ -123,7 +130,7 @@ export const CreateTaskModal = ({
           </div>
 
           <div>
-            <label htmlFor="title" className="text-lg">
+            <label htmlFor="title" className="text-lg font-semibold">
               Descrição
             </label>
             <span className="block text-sm text-red-500">
@@ -138,7 +145,7 @@ export const CreateTaskModal = ({
 
           <div className="flex justify-between px-1">
             <div>
-              <label htmlFor="title" className="text-lg">
+              <label htmlFor="title" className="text-lg font-semibold">
                 Data
               </label>
               <span className="block text-sm text-red-500">
@@ -152,53 +159,57 @@ export const CreateTaskModal = ({
             </div>
 
             <div>
-              <label htmlFor="title" className="text-lg">
+              <label htmlFor="title" className="text-lg font-semibold">
                 Horário
               </label>
               <input
                 {...register("time")}
                 type="time"
-                className="block bg-neutral-200 rounded-lg p-1"
+                className="block bg-neutral-200 rounded-lg p-1 "
               />
             </div>
 
             <div>
-              <label htmlFor="title" className="text-lg">
+              <label htmlFor="title" className="text-lg font-semibold">
                 Duração
               </label>
               <input
                 {...register("duration")}
                 type="time"
-                className="block bg-neutral-200 rounded-lg p-1"
+                className="block bg-neutral-200 rounded-lg p-1 "
               />
             </div>
           </div>
 
           <div>
-            <span className="text-lg">Tags</span>
-            <div className="bg-neutral-200 p-4 flex flex-wrap gap-8 rounded-lg">
-              {/* {tags.map(({ color, name }) => (
-                <>
-                  <input
-                    type="checkbox"
-                    id={`${name},${color}`}
-                    {...register("tags")}
-                    onChange={(e) => {
-                      e.target.value = e.target.id;
-                      onChange(e);
-                    }}
-                  />
-                  <label
-                    htmlFor={`${name},${color}`}
-                    className={`${color} -ml-6 px-2 py-1 rounded-md uppercase text-sm font-bold opacity-90 hover:opacity-100 transition-opacity`}
-                  >
-                    {name}
-                  </label>
-                </>
-              ))} */}
-              <p className="block mx-auto text-lg opacity-60 font-semibold">
-                Nao há nenhuma task criada =(
-              </p>
+            <span className="text-lg font-semibold">Tags</span>
+            <div className="bg-neutral-200 p-4 flex flex-wrap justify-start gap-8 rounded-lg">
+              {tags ? (
+                tags.map(({ color, name }, id) => (
+                  <div key={id}>
+                    <input
+                      type="checkbox"
+                      id={`${name},${color}`}
+                      {...register("tags")}
+                      onChange={(e) => {
+                        e.target.value = e.target.id;
+                        onChange(e);
+                      }}
+                      className="w-4 h-4 mr-1 cursor-pointer"
+                    />
+                    <label
+                      htmlFor={`${name},${color}`}
+                      className={`${color} px-2 py-[2px] cursor-pointer transition-transform rounded-md uppercase text-sm font-bold opacity-90`}
+                    >
+                      {name}
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p className="block mx-auto text-lg opacity-60 font-semibold">
+                  Nao há nenhuma tag criada =(
+                </p>
+              )}
             </div>
           </div>
         </main>
@@ -206,7 +217,7 @@ export const CreateTaskModal = ({
         <footer className="flex items-center justify-center mt-10">
           <button
             type="submit"
-            className=" bg-green-300 border-2 border-green-500 hover:bg-green-500 hover:text-neutral-50 transition-colors rounded-lg py-3 w-[70%] font-bold text-xl"
+            className=" bg-blue-500 text-neutral-50 transition-colors rounded-sm py-3 w-[70%] font-bold text-xl"
           >
             Criar
           </button>
