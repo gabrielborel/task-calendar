@@ -4,11 +4,7 @@ import { Eye, EyeSlash } from "phosphor-react";
 import * as yup from "yup";
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-
-type Inputs = {
-  email: string;
-  password: string;
-};
+import { useNavigate } from "react-router-dom";
 
 const LoginAndSignUpFormSchema = yup.object().shape({
   email: yup
@@ -22,10 +18,15 @@ const LoginAndSignUpFormSchema = yup.object().shape({
 });
 
 type Forms = "login" | "signup";
+type Inputs = {
+  email: string;
+  password: string;
+};
 
 export default function Login() {
   const [selectedForm, setSelectedForm] = useState<Forms>("login");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -36,10 +37,12 @@ export default function Login() {
   });
 
   const handleSubmitLogin: SubmitHandler<Inputs> = (data) => {
+    navigate("/home");
     reset();
   };
 
   const handleSubmitSignup: SubmitHandler<Inputs> = (data) => {
+    navigate("/home");
     reset();
   };
 
@@ -53,12 +56,13 @@ export default function Login() {
         }
         className="bg-neutral-100 p-4 rounded-md shadow-md w-[350px]"
       >
-        <header className="flex justify-between items-center">
+        <header className="flex justify-around items-center">
           <button
             type="button"
             onClick={() => setSelectedForm("login")}
-            className={cx("uppercase font-semibold text-xl pl-8", {
-              "text-blue-500": selectedForm === "login",
+            className={cx("uppercase font-semibold text-xl py-1 px-3", {
+              "text-blue-500 bg-blue-200 border-b-2 border-b-blue-400 rounded-sm ":
+                selectedForm === "login",
             })}
           >
             login
@@ -66,8 +70,9 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setSelectedForm("signup")}
-            className={cx("uppercase font-semibold text-xl pr-8", {
-              "text-blue-400": selectedForm === "signup",
+            className={cx("uppercase font-semibold text-xl py-1 px-3", {
+              "text-blue-500 bg-blue-200 border-b-2 border-b-blue-400 rounded-sm":
+                selectedForm === "signup",
             })}
           >
             cadastro

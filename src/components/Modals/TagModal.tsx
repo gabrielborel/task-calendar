@@ -55,6 +55,8 @@ export const TagModal = ({
     }
     if (name.length >= 10) {
       return setNameError("No máximo 10 caracteres");
+    } else {
+      setNameError("");
     }
     if (!selectedColor) {
       return setColorError("Cor é obrigatório");

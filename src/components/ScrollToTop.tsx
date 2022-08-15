@@ -1,5 +1,4 @@
 import { ArrowLineUp } from "phosphor-react";
-import { useState } from "react";
 
 export const ScrollToTopButton = () => {
   const scrollToTop = () => {
@@ -12,7 +11,7 @@ export const ScrollToTopButton = () => {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-20 right-10 flex flex-col items-center hover:scale-105 transition-transform font-semibold "
+      className="animate-bounce fixed bottom-20 right-10 flex flex-col items-center hover:scale-105 transition-transform font-semibold "
     >
       <ArrowLineUp
         weight="bold"
