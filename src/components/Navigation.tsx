@@ -14,7 +14,7 @@ export const Navigation = () => {
             location.pathname === "/home",
         })}
       >
-        home
+        HOME
       </button>
 
       <button
@@ -24,7 +24,7 @@ export const Navigation = () => {
             location.pathname === "/profile",
         })}
       >
-        perfil
+        PERFIL
       </button>
     </nav>
   );
