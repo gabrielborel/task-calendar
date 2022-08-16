@@ -27,6 +27,7 @@ type Inputs = {
   tags: Tag[];
   completed: boolean;
   id: string;
+  _id: string;
 };
 
 const CreateTaskSchema = yup.object().shape({
