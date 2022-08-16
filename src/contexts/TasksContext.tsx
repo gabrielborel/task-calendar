@@ -95,23 +95,19 @@ export const TasksProvider = ({ children }: TasksProviderProps) => {
   };
 
   const updateTask = async (taskToUpdate: Task) => {
-    taskToUpdate.tags = taskToUpdate.tags.map((tag) => tag._id);
+    taskToUpdate.tags = taskToUpdate.tags.map(
+      (tag) => tag._id
+    ) as unknown as Tag[];
 
     const { data } = await api.put(`/tasks/${taskToUpdate?._id}`, {
       ...taskToUpdate,
     });
-
-    console.log(data);
 
     const updatedTasks = tasks?.map((previousTask) =>
       previousTask._id === taskToUpdate?._id
         ? { ...taskToUpdate }
         : { ...previousTask }
     );
-
-    console.log(updatedTasks);
-
-    console.log("haha", taskToUpdate);
 
     setTasks(updatedTasks);
   };
@@ -129,7 +125,7 @@ export const TasksProvider = ({ children }: TasksProviderProps) => {
       task._id === taskId ? { ...taskToBeUpdated } : { ...task }
     );
 
-    setTasks(updatedTasks);
+    setTasks(updatedTasks as unknown as Task[]);
   };
 
   return (

@@ -39,7 +39,7 @@ export default function App() {
 
     const ultimateTest = [...new Set([...filteredByName, ...filteredByTag])];
 
-    setFilteredTasks(ultimateTest);
+    setFilteredTasks(ultimateTest as unknown as Task[]);
   }, [nameToSearch, selectedTagsToFilter, tasks, tags]);
 
   return (
