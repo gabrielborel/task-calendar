@@ -8,6 +8,8 @@ import { Tag, useTags } from "../../contexts/TagsContext";
 import { Task, useTasks } from "../../contexts/TasksContext";
 import { format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { ITask } from "../../interfaces/ITask";
+import toast from "react-hot-toast";
 
 interface TaskModalProps {
   isVisible: boolean;
@@ -45,7 +47,7 @@ const CreateTaskSchema = yup.object().shape({
   duration: yup.string(),
   tags: yup.array(),
   completed: yup.boolean().default(false),
-  id: yup.string().uuid().default(uuidv4()),
+  _id: yup.string(),
 });
 
 export const TaskModal = ({
@@ -60,20 +62,21 @@ export const TaskModal = ({
     reset,
     formState: { errors },
     setValue,
+    getValues,
   } = useForm<Inputs>({
     resolver: yupResolver(CreateTaskSchema),
   });
 
-  const { tags } = useTags();
-  const { createTask } = useTasks();
+  const { tags: savedTags } = useTags();
+  const { createTask, updateTask } = useTasks();
   const { onChange } = register("tags");
 
   const loadTags = (): Tag[] => {
     let taskTags: Tag[] = [];
 
-    tags?.forEach((tag, id) => {
+    savedTags?.forEach((tag, id) => {
       const taskTag = task?.tags[id];
-      if (tag.id === (taskTag as unknown as string)) taskTags.push(tag);
+      if (tag._id === (taskTag as unknown as string)) taskTags.push(tag);
     });
 
     return taskTags;
@@ -91,16 +94,23 @@ export const TaskModal = ({
       setValue("time", task?.time!);
       setValue("duration", task?.duration!);
       setValue("tags", loadTags());
+      setValue("id", task?._id!);
+      setValue("_id", task?._id!);
     }
   }, [mode, task]);
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     if (mode === "create") {
-      createTask(data);
+      console.log(data);
+      createTask(data as unknown as Task);
+      toast.success("Tarefa criada!");
+      closeModal();
     }
 
     if (mode === "edit") {
-      console.log(data);
+      updateTask(data as unknown as Task);
+      toast.success("Tarefa editada!");
+      closeModal();
     }
 
     reset();
@@ -120,7 +130,7 @@ export const TaskModal = ({
   return (
     <div
       className={cx(
-        "inset-0 bg-overlay w-full h-full flex items-center justify-center",
+        "inset-0 bg-overlay w-full h-max-screen flex items-center justify-center",
         {
           absolute: isVisible,
           hidden: !isVisible,
@@ -220,35 +230,37 @@ export const TaskModal = ({
           <div>
             <span className="text-lg font-semibold">Tags</span>
             <div className="bg-neutral-200 p-4 flex flex-wrap justify-start gap-8 rounded-sm">
-              {tags?.length ? (
-                tags.map(({ color, name, id }) => (
-                  <div key={id} className="flex items-center">
+              {mode === "create" &&
+                savedTags?.map(({ name, color, _id }) => (
+                  <div key={_id} className="flex items-center">
                     <input
                       type="checkbox"
-                      id={id}
+                      id={_id}
                       {...register("tags")}
                       onChange={(e) => {
                         e.target.value = e.target.id;
                         onChange(e);
                       }}
-                      defaultChecked={
-                        mode !== "create" && tags.some((tag) => tag.id === id)
-                      }
                       className="w-4 h-4 mr-1 cursor-pointer"
                     />
                     <label
-                      htmlFor={id}
+                      htmlFor={_id}
                       className={`bg-${color} px-2 py-[2px] cursor-pointer transition-transform rounded-sm uppercase text-sm font-bold opacity-90`}
                     >
                       {name}
                     </label>
                   </div>
-                ))
-              ) : (
-                <p className="block mx-auto text-lg opacity-60 font-semibold">
-                  Nao há nenhuma tag criada =(
-                </p>
-              )}
+                ))}
+              {mode === "edit" &&
+                loadTags().map(({ name, color, _id }) => (
+                  <label
+                    key={_id}
+                    htmlFor={_id}
+                    className={`bg-${color} px-2 py-[2px] cursor-pointer transition-transform rounded-sm uppercase text-sm font-bold opacity-90`}
+                  >
+                    {name}
+                  </label>
+                ))}
             </div>
           </div>
         </main>

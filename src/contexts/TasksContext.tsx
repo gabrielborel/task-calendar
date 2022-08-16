@@ -1,5 +1,14 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { TaskModal } from "../components/Modals/TaskModal";
+import { ITask } from "../interfaces/ITask";
+import { api } from "../services/api";
+import { useSession } from "./SessionContext";
 import { Tag } from "./TagsContext";
 
 interface TasksProviderProps {
@@ -7,10 +16,10 @@ interface TasksProviderProps {
 }
 
 interface ITasksContext {
-  tasks: Task[];
+  tasks: ITask[];
   createTask: (task: Task) => void;
   removeTask: (taskId: string) => void;
-  updateTasks: (updatedTasks: Task[]) => void;
+  updateTask: (taskToUpdate: Task) => void;
   setTaskToEdit: (taskToEdit: Task) => void;
   openCreateTaskModal: () => void;
   openEditTaskModal: (taskToEdit: Task) => void;
@@ -19,7 +28,7 @@ interface ITasksContext {
 }
 
 export interface Task {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   date: string;
@@ -36,8 +45,22 @@ export const TasksProvider = ({ children }: TasksProviderProps) => {
   const [isTaskModalOpen, setTaskModalStatus] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [task, setTask] = useState<Task>();
+  const { session } = useSession();
 
-  console.log(tasks);
+  const loadTasks = async () => {
+    if (session) {
+      const {
+        data: { tasks },
+      } = await api.get(`/tasks/${session?.user?.userId}`);
+
+      console.log(tasks);
+      setTasks(tasks);
+    }
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, [session]);
 
   const openCreateTaskModal = () => {
     setTaskModalStatus(true);
@@ -51,16 +74,59 @@ export const TasksProvider = ({ children }: TasksProviderProps) => {
   };
 
   const closeModal = () => setTaskModalStatus(false);
-  const createTask = (taskToAdd: Task) =>
-    setTasks((tasks) => [...tasks, taskToAdd]);
-  const removeTask = (taskId: string) =>
-    setTasks((tasks) => tasks.filter((task) => task.id !== taskId));
-  const updateTasks = (updatedTasks: Task[]) => setTasks(updatedTasks);
+
+  const createTask = async (taskToAdd: Task) => {
+    const {
+      data: { newTask },
+    } = await api.post("/tasks", {
+      ...taskToAdd,
+      user: session?.user?.userId,
+    });
+
+    setTasks((previousTasks) => [...previousTasks, newTask]);
+  };
+
+  const removeTask = async (taskId: string) => {
+    await api.delete(`/tasks/${taskId}`);
+
+    setTasks((previousTask) =>
+      previousTask.filter((task) => task._id !== taskId)
+    );
+  };
+
+  const updateTask = async (taskToUpdate: Task) => {
+    taskToUpdate.tags = taskToUpdate.tags.map((tag) => tag._id);
+
+    const { data } = await api.put(`/tasks/${taskToUpdate?._id}`, {
+      ...taskToUpdate,
+    });
+
+    console.log(data);
+
+    const updatedTasks = tasks?.map((previousTask) =>
+      previousTask._id === taskToUpdate?._id
+        ? { ...taskToUpdate }
+        : { ...previousTask }
+    );
+
+    console.log(updatedTasks);
+
+    console.log("haha", taskToUpdate);
+
+    setTasks(updatedTasks);
+  };
   const setTaskToEdit = (taskToEdit: Task) => setTask(taskToEdit);
 
-  const handleToggleTaskCompletion = (taskId: string) => {
+  const handleToggleTaskCompletion = async (taskId: string) => {
+    const taskToBeUpdated = tasks.find((task) => task._id === taskId);
+    taskToBeUpdated!.completed = !taskToBeUpdated?.completed;
+
+    await api.put(`/tasks/${taskId}`, {
+      ...taskToBeUpdated,
+    });
+
     const updatedTasks = tasks.map((task) =>
-      task.id === taskId ? { ...task, completed: !task.completed } : { ...task }
+      task._id === taskId ? { ...taskToBeUpdated } : { ...task }
     );
 
     setTasks(updatedTasks);
@@ -72,7 +138,7 @@ export const TasksProvider = ({ children }: TasksProviderProps) => {
         tasks,
         createTask,
         removeTask,
-        updateTasks,
+        updateTask,
         openCreateTaskModal,
         openEditTaskModal,
         setTaskToEdit,

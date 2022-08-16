@@ -1,5 +1,13 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { TagModal } from "../components/Modals/TagModal";
+import { api } from "../services/api";
+import { useSession } from "./SessionContext";
 
 interface TagsProviderProps {
   children: ReactNode;
@@ -13,11 +21,11 @@ interface ITagsContext {
   createTag: (tagToAdd: Tag) => void;
   setTagToEdit: (tagToEdit: Tag) => void;
   removeTag: (tagToRemove: Tag) => void;
-  updateTags: (updatedTags: Tag[]) => void;
+  updateTag: (tagToUpdate: Tag) => void;
 }
 
 export interface Tag {
-  id: string;
+  _id?: string;
   name: string;
   color: string;
 }
@@ -29,6 +37,21 @@ export const TagsProvider = ({ children }: TagsProviderProps) => {
   const [isTagModalOpen, setTagModalStatus] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [tag, setTag] = useState<Tag>();
+  const { session } = useSession();
+
+  const loadTags = async () => {
+    if (session) {
+      const {
+        data: { tags },
+      } = await api.get(`/tags/${session?.user?.userId}`);
+
+      setTags(tags);
+    }
+  };
+
+  useEffect(() => {
+    loadTags();
+  }, [session]);
 
   const openCreateTagModal = () => {
     setTagModalStatus(true);
@@ -42,11 +65,43 @@ export const TagsProvider = ({ children }: TagsProviderProps) => {
   };
 
   const closeModal = () => setTagModalStatus(false);
-  const updateTags = (updatedTags: Tag[]) => setTags(updatedTags);
   const setTagToEdit = (tagToEdit: Tag) => setTag(tagToEdit);
-  const createTag = (tagToAdd: Tag) => setTags((tags) => [...tags, tagToAdd]);
-  const removeTag = (tagToRemove: Tag) =>
-    setTags((tags) => tags.filter((tag) => tag.id !== tagToRemove.id));
+
+  const updateTag = async (tagToUpdate: Tag) => {
+    await api.put(`/tags/${tagToUpdate?._id}`, {
+      name: tagToUpdate?.name,
+      color: tagToUpdate?.color,
+    });
+
+    const updatedTags = tags?.map((previousTag) =>
+      previousTag._id === tagToUpdate?._id
+        ? { ...tag, name: tagToUpdate.name, color: tagToUpdate.color }
+        : { ...previousTag }
+    );
+
+    setTags(updatedTags);
+  };
+
+  const createTag = async (tagToAdd: Tag) => {
+    const {
+      data: { newTag },
+    } = await api.post("/tags", {
+      name: tagToAdd.name,
+      color: tagToAdd.color,
+      userId: session?.user.userId,
+    });
+
+    setTags((tags) => [
+      ...tags,
+      { name: newTag.name, color: newTag.color, _id: newTag._id },
+    ]);
+  };
+
+  const removeTag = async (tagToRemove: Tag) => {
+    await api.delete(`/tags/${tagToRemove?._id}`);
+
+    setTags((tags) => tags.filter((tag) => tag._id !== tagToRemove._id));
+  };
 
   return (
     <TagsContext.Provider
@@ -57,7 +112,7 @@ export const TagsProvider = ({ children }: TagsProviderProps) => {
         setTagToEdit,
         createTag,
         removeTag,
-        updateTags,
+        updateTag,
         closeModal,
       }}
     >

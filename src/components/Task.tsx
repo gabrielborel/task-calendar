@@ -10,6 +10,8 @@ import {
 import cx from "classnames";
 import { Tag, useTags } from "../contexts/TagsContext";
 import { useTasks } from "../contexts/TasksContext";
+import { api } from "../services/api";
+import { useEffect, useState } from "react";
 
 export interface TaskProps {
   task: {
@@ -20,12 +22,13 @@ export interface TaskProps {
     duration: string;
     tags: Tag[];
     completed: boolean;
-    id: string;
+    _id: string;
   };
 }
 
 export const Task = ({ task }: TaskProps) => {
-  const { openEditTaskModal, handleToggleTaskCompletion } = useTasks();
+  const { openEditTaskModal, handleToggleTaskCompletion, removeTask } =
+    useTasks();
   const { tags } = useTags();
 
   const loadTags = (): Tag[] => {
@@ -33,11 +36,13 @@ export const Task = ({ task }: TaskProps) => {
 
     tags?.forEach((tag, id) => {
       const taskTag = task?.tags[id];
-      if (tag.id === (taskTag as unknown as string)) taskTags.push(tag);
+      if (tag._id === (taskTag as unknown as string)) taskTags.push(tag);
     });
 
     return taskTags;
   };
+
+  const taskTags = loadTags();
 
   return (
     <div
@@ -48,7 +53,7 @@ export const Task = ({ task }: TaskProps) => {
         }
       )}
     >
-      <div className="flex-1">
+      <div className="flex-1 min-h-[150px]">
         <strong className="font-semibold text-2xl">{task.title}</strong>
         <span className="text-lg flex items-center gap-1">
           <Calendar size={18} /> {task.date}
@@ -77,7 +82,7 @@ export const Task = ({ task }: TaskProps) => {
       </div>
 
       <div className="flex flex-col gap-1">
-        {loadTags().map((tag, id) => (
+        {taskTags.map((tag, id) => (
           <span
             key={id}
             className={`text-sm bg-${tag.color} px-2 py-[2px] cursor-pointer transition-transform rounded-sm uppercase text-sm font-bold opacity-90`}
@@ -97,13 +102,14 @@ export const Task = ({ task }: TaskProps) => {
           />
 
           <Check
-            onClick={() => handleToggleTaskCompletion(task.id)}
+            onClick={() => handleToggleTaskCompletion(task._id)}
             size={32}
             weight="duotone"
             className="bg-green-200 text-green-900 border-green-100 p-1 rounded-sm shadow-sm hover:-translate-y-1 transition-transform border-2"
           />
 
           <X
+            onClick={() => removeTask(task._id)}
             size={32}
             weight="duotone"
             className="bg-red-200 border-red-100 text-red-500 p-1 rounded-sm shadow-sm hover:-translate-y-1 transition-transform border-2"
@@ -112,8 +118,9 @@ export const Task = ({ task }: TaskProps) => {
       )}
       {task.completed && (
         <Checks
+          onClick={() => handleToggleTaskCompletion(task._id)}
           size={32}
-          className="absolute right-[120px] md:right-[160px] bg-green-200 hover:bg-green-300 border-green-200 -top-2 p-1 rounded-sm shadow-sm hover:-translate-y-1 transition-transform border-2 "
+          className="absolute right-[120px] md:right-[170px] w-[60px] bg-green-200 hover:bg-green-300 border-green-200 -top-2 p-1 rounded-sm shadow-sm hover:-translate-y-1 transition-transform border-2 "
         />
       )}
     </div>

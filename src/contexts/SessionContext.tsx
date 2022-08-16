@@ -3,7 +3,6 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useLayoutEffect,
   useState,
 } from "react";
 import Cookies from "js-cookie";

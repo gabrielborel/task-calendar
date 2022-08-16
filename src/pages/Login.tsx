@@ -1,13 +1,31 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "../contexts/SessionContext";
+import { api } from "../services/api";
 import { jwtDecode } from "../utils/jwtDecode";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn } = useSession();
 
-  const handleCallbackResponse = (response: any) => {
+  const handleCallbackResponse = async (response: any) => {
     const user = jwtDecode(response.credential);
-    console.log(user);
+
+    const {
+      data: { newUser },
+    } = await api.post("/users", {
+      name: user.name,
+      avatar: user.picture,
+      email: user.email,
+    });
+
+    signIn({
+      name: newUser.name,
+      avatar: newUser.avatar,
+      email: newUser.email,
+      userId: newUser._id,
+    });
+
     navigate("/home");
   };
 

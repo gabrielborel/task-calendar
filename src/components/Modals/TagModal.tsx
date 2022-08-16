@@ -2,17 +2,16 @@ import { X, Check } from "phosphor-react";
 import cx from "classnames";
 import { FormEvent, useEffect, useState } from "react";
 import { Tag, useTags } from "../../contexts/TagsContext";
-import { v4 as uuidv4 } from "uuid";
+import toast from "react-hot-toast";
 
 const colors = [
-  "red-400",
-  "yellow-400",
+  "blue-100",
+  "green-200",
+  "neutral-300",
   "blue-400",
-  "green-400",
-  "pink-400",
-  "orange-400",
+  "blue-500",
+  "red-200",
 ];
-
 interface TagModalProps {
   isVisible: boolean;
   closeModal: () => void;
@@ -31,7 +30,7 @@ export const TagModal = ({
   const [nameError, setNameError] = useState("");
   const [colorError, setColorError] = useState("");
 
-  const { createTag, tags, updateTags } = useTags();
+  const { createTag, updateTag } = useTags();
 
   useEffect(() => {
     if (mode === "edit") {
@@ -45,7 +44,7 @@ export const TagModal = ({
     }
   }, [mode, tag]);
 
-  const handleSubmitTagForm = (e: FormEvent) => {
+  const handleSubmitTagForm = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!name) {
@@ -65,19 +64,17 @@ export const TagModal = ({
     }
 
     if (mode === "create") {
-      createTag({ name, color: selectedColor, id: uuidv4() });
-      setName("");
+      createTag({ name, color: selectedColor });
+      toast.success("Tag criada!");
+
       setSelectedColor("");
+      setName("");
     }
 
     if (mode === "edit") {
-      const updatedTags = tags?.map((previousTag) =>
-        previousTag.id === tag?.id
-          ? { ...tag, name, color: selectedColor }
-          : { ...previousTag }
-      );
-
-      updateTags(updatedTags!);
+      updateTag({ name, color: selectedColor, _id: tag?._id });
+      toast.success("Tarefa editada!");
+      closeModal();
     }
   };
 

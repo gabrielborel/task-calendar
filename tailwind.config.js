@@ -7,7 +7,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        overlay: 'rgba(0,0,0,0.3)'
+        overlay: 'rgba(0,0,0,0.3)',
+        cream: '#feebb8',
+        babyblue: '#abdbe3',
+        greatorange: '#d9471f',
+        gold: '#Ffd600',
+        eletricviolet: '#9900ff',
+        torchred: '#Ff004c'
       },
       fontFamily: {
         'cairo': ['Cairo', 'sans-serif']
